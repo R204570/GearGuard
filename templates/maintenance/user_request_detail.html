@@ -1,0 +1,236 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Request Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clipboard-check"></i> Maintenance Request Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Request Information -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Request Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1"><strong>Subject:</strong></p>
+                            <p>{{ request.subject }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1"><strong>Status:</strong></p>
+                            <p>
+                                {% if request.stage == 'New' %}
+                                    <span class="badge bg-warning">{{ request.stage }}</span>
+                                {% elif request.stage == 'In Progress' %}
+                                    <span class="badge bg-info">{{ request.stage }}</span>
+                                {% elif request.stage == 'Repaired' %}
+                                    <span class="badge bg-success">{{ request.stage }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ request.stage }}</span>
+                                {% endif %}
+                                {% if request.is_overdue %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1"><strong>Type:</strong></p>
+                            <p>
+                                {% if request.request_type == 'Preventive' %}
+                                    <span class="badge bg-success">{{ request.request_type }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ request.request_type }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1"><strong>Priority:</strong></p>
+                            <p>
+                                <span class="badge bg-{% if request.priority == 'Critical' %}danger{% elif request.priority == 'High' %}warning{% else %}info{% endif %}">
+                                    {{ request.priority }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    {% if request.description %}
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Description:</strong></p>
+                            <p>{{ request.description }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Equipment Information -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Equipment Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1">
+                                <strong>Equipment Name:</strong> 
+                                <a href="{% url 'maintenance:equipment_list' %}?search={{ request.equipment.equipment_name }}" 
+                                   class="text-decoration-none">
+                                    {{ request.equipment.equipment_name }}
+                                </a>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1"><strong>Serial Number:</strong> {{ request.equipment.serial_number }}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1"><strong>Category:</strong> {{ request.equipment.category }}</p>
+                        </div>
+                        {% if request.equipment.location %}
+                            <div class="col-md-6 mb-2">
+                                <p class="mb-1"><strong>Location:</strong> {{ request.equipment.location }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Assignment Information -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Assignment Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1"><strong>Maintenance Team:</strong></p>
+                            <p>
+                                {% if request.maintenance_team %}
+                                    {{ request.maintenance_team.team_name }}
+                                {% else %}
+                                    <span class="text-muted">Not assigned yet</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1"><strong>Assigned Technician:</strong></p>
+                            <p>
+                                {% if request.assigned_technician %}
+                                    {{ request.assigned_technician.get_full_name|default:request.assigned_technician.username }}
+                                {% else %}
+                                    <span class="text-muted">Not assigned yet</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Timeline</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <p class="mb-1"><strong>Created:</strong></p>
+                            <p>{{ request.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        {% if request.scheduled_date %}
+                            <div class="col-md-4 mb-2">
+                                <p class="mb-1"><strong>Scheduled:</strong></p>
+                                <p>{{ request.scheduled_date|date:"M d, Y" }}</p>
+                            </div>
+                        {% endif %}
+                        {% if request.completed_date %}
+                            <div class="col-md-4 mb-2">
+                                <p class="mb-1"><strong>Completed:</strong></p>
+                                <p>{{ request.completed_date|date:"M d, Y" }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Technician Notes (if available) -->
+                {% if request.technician_notes %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Technician Notes</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-0">{{ request.technician_notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Resolution Summary (if available) -->
+                {% if request.resolution_summary %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Resolution Summary</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-0">{{ request.resolution_summary }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Duration (if available) -->
+                {% if request.duration_hours %}
+                    <div class="mb-4">
+                        <p class="mb-1"><strong>Duration:</strong> {{ request.duration_hours }} hours</p>
+                    </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <a href="{% url 'maintenance:user_dashboard' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Status Card -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Request Status</h6>
+            </div>
+            <div class="card-body text-center">
+                {% if request.stage == 'New' %}
+                    <div class="mb-3">
+                        <i class="bi bi-inbox text-warning" style="font-size: 3rem;"></i>
+                        <h5 class="mt-2">New Request</h5>
+                        <p class="text-muted small">Your request has been submitted and is waiting to be assigned.</p>
+                    </div>
+                {% elif request.stage == 'In Progress' %}
+                    <div class="mb-3">
+                        <i class="bi bi-gear text-info" style="font-size: 3rem;"></i>
+                        <h5 class="mt-2">In Progress</h5>
+                        <p class="text-muted small">A technician is working on your request.</p>
+                    </div>
+                {% elif request.stage == 'Repaired' %}
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                        <h5 class="mt-2">Repaired</h5>
+                        <p class="text-muted small">Your request has been completed successfully.</p>
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <i class="bi bi-x-circle text-secondary" style="font-size: 3rem;"></i>
+                        <h5 class="mt-2">{{ request.stage }}</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Info Card -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-2"><strong>Request ID:</strong> #{{ request.id }}</p>
+                <p class="small mb-2"><strong>Created By:</strong> {{ request.created_by.get_full_name|default:request.created_by.username }}</p>
+                {% if request.updated_at %}
+                    <p class="small mb-0"><strong>Last Updated:</strong> {{ request.updated_at|date:"M d, Y H:i" }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

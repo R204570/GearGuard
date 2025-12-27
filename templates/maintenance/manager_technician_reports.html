@@ -1,0 +1,141 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Technician Reports{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-people"></i> Technician Reports & Performance</h5>
+        <a href="{% url 'maintenance:manager_dashboard' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filter by Technician -->
+        <div class="mb-4">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label for="technician" class="form-label">Filter by Technician</label>
+                    <select name="technician" id="technician" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Technicians</option>
+                        {% for tech in technicians %}
+                            <option value="{{ tech.pk }}" {% if selected_technician == tech.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ tech.get_full_name|default:tech.username }} 
+                                ({{ tech.total_tasks }} tasks, {{ tech.total_hours|floatformat:2 }} hrs)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <a href="{% url 'maintenance:manager_technician_reports' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Clear Filter
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reports Table -->
+        {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Equipment</th>
+                            <th>Technician</th>
+                            <th>Team</th>
+                            <th>Completed Date</th>
+                            <th>Duration</th>
+                            <th>Priority</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                            <tr>
+                                <td>
+                                    <strong>{{ report.subject }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ report.request_type }}</small>
+                                </td>
+                                <td>{{ report.equipment.equipment_name }}</td>
+                                <td>
+                                    {% if report.assigned_technician %}
+                                        {{ report.assigned_technician.get_full_name|default:report.assigned_technician.username }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if report.maintenance_team %}
+                                        {{ report.maintenance_team.team_name }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if report.completed_date %}
+                                        {{ report.completed_date|date:"M d, Y" }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong class="text-success">{{ report.duration_hours }} hrs</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if report.priority == 'Critical' %}danger{% elif report.priority == 'High' %}warning{% elif report.priority == 'Medium' %}info{% else %}secondary{% endif %}">
+                                        {{ report.priority }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'maintenance:request_update' report.pk %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if selected_technician %}&technician={{ selected_technician }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_technician %}&technician={{ selected_technician }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_technician %}&technician={{ selected_technician }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_technician %}&technician={{ selected_technician }}{% endif %}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No reports found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,139 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Equipment Management{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-tools"></i> Equipment Management</h5>
+        <a href="/admin/maintenance/equipment/add/" class="btn btn-primary btn-sm" target="_blank">
+            <i class="bi bi-plus-circle"></i> Add Equipment
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label for="category" class="form-label">Category</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>
+                            {{ cat }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="scrapped" class="form-label">Status</label>
+                <select name="scrapped" id="scrapped" class="form-select">
+                    <option value="">All Equipment</option>
+                    <option value="false" {% if current_scrapped == 'false' %}selected{% endif %}>Active</option>
+                    <option value="true" {% if current_scrapped == 'true' %}selected{% endif %}>Scrapped</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="{% url 'maintenance:admin_equipment' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            </div>
+        </form>
+
+        <!-- Equipment Table -->
+        {% if equipment_list %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Equipment Name</th>
+                            <th>Serial Number</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Team</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipment in equipment_list %}
+                            <tr>
+                                <td><strong>{{ equipment.equipment_name }}</strong></td>
+                                <td>{{ equipment.serial_number }}</td>
+                                <td><span class="badge bg-secondary">{{ equipment.category }}</span></td>
+                                <td>{{ equipment.department|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'maintenance:admin_teams' %}" class="text-decoration-none">
+                                        {{ equipment.maintenance_team.team_name }}
+                                    </a>
+                                </td>
+                                <td>{{ equipment.location|default:"-" }}</td>
+                                <td>
+                                    {% if equipment.is_scrapped %}
+                                        <span class="badge bg-danger">Scrapped</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/admin/maintenance/equipment/{{ equipment.id }}/change/" 
+                                       class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if current_category %}&category={{ current_category }}{% endif %}{% if current_scrapped %}&scrapped={{ current_scrapped }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_scrapped %}&scrapped={{ current_scrapped }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_scrapped %}&scrapped={{ current_scrapped }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_scrapped %}&scrapped={{ current_scrapped }}{% endif %}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No equipment found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+

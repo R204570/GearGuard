@@ -1,0 +1,94 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}{% if object %}Edit Team{% else %}Add New Team{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-{% if object %}pencil{% else %}plus-circle{% endif %}"></i>
+                    {% if object %}Edit Team{% else %}Add New Team{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.team_name.id_for_label }}" class="form-label">
+                            Team Name <span class="text-danger">*</span>
+                        </label>
+                        {{ form.team_name }}
+                        {% if form.team_name.errors %}
+                            <div class="text-danger small">{{ form.team_name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">{{ form.description.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Optional - describe the team's purpose and responsibilities</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                Active
+                            </label>
+                        </div>
+                        {% if form.is_active.errors %}
+                            <div class="text-danger small">{{ form.is_active.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Only active teams can be assigned to equipment and maintenance requests</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'maintenance:admin_teams' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> {% if object %}Update Team{% else %}Create Team{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i> Fill in the required fields marked with <span class="text-danger">*</span>.
+                </p>
+                <hr>
+                <h6>Required Fields:</h6>
+                <ul class="small">
+                    <li>Team Name (must be unique)</li>
+                </ul>
+                <hr>
+                <h6>Optional Fields:</h6>
+                <ul class="small">
+                    <li>Description</li>
+                    <li>Active Status (checked by default)</li>
+                </ul>
+                <hr>
+                <p class="small text-muted">
+                    <strong>Note:</strong> After creating the team, you can add team members through the team management page.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

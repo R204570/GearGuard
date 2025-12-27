@@ -1,0 +1,86 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Manager Hours Report{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Manager Hours & Task Management</h5>
+        <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Summary Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ total_manager_hours }}</h3>
+                        <p class="text-muted mb-0">Total Hours Managed</p>
+                        <small class="text-muted">Across all managers</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ managers.count }}</h3>
+                        <p class="text-muted mb-0">Active Managers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Managers Table -->
+        {% if managers %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Manager</th>
+                            <th>Email</th>
+                            <th>Requests Created</th>
+                            <th>Completed Requests</th>
+                            <th>Total Hours Managed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for manager in managers %}
+                            <tr>
+                                <td>
+                                    <strong>{{ manager.get_full_name|default:manager.username }}</strong>
+                                </td>
+                                <td>{{ manager.email }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ manager.total_requests_created }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ manager.completed_requests }}</span>
+                                </td>
+                                <td>
+                                    <strong class="text-primary">
+                                        {{ manager.total_hours_managed|floatformat:2|default:"0.00" }} hrs
+                                    </strong>
+                                </td>
+                                <td>
+                                    <a href="{% url 'maintenance:request_list' %}?created_by={{ manager.pk }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-list"></i> View Requests
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No managers found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

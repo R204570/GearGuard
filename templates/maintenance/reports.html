@@ -1,0 +1,284 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Reports Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-left: 4px solid;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .stat-primary { border-left-color: #0d6efd; }
+    .stat-success { border-left-color: #198754; }
+    .stat-info { border-left-color: #0dcaf0; }
+    .stat-warning { border-left-color: #ffc107; }
+    .progress-bar-custom {
+        height: 20px;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card stat-primary">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Total Requests</h6>
+                <h3 class="mb-0">{{ total_requests }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card stat-success">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Repaired Requests</h6>
+                <h3 class="mb-0">{{ repaired_requests }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card stat-info">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Average Repair Duration</h6>
+                <h3 class="mb-0">
+                    {% if avg_repair_duration %}
+                        {{ avg_repair_duration|floatformat:2 }} hrs
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h3>
+                <small class="text-muted">Based on {{ requests_with_duration }} completed requests</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card stat-warning">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">Active Teams</h6>
+                <h3 class="mb-0">{{ requests_per_team|length }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Requests per Team -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Requests per Team</h5>
+            </div>
+            <div class="card-body">
+                {% if team_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Team</th>
+                                    <th>Total</th>
+                                    <th>New</th>
+                                    <th>In Progress</th>
+                                    <th>Repaired</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in team_stats %}
+                                    <tr>
+                                        <td><strong>{{ stat.team.team_name }}</strong></td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ stat.total }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning">{{ stat.new }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ stat.in_progress }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ stat.repaired }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No team request data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests per Equipment -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-tools"></i> Top Equipment by Request Count</h5>
+            </div>
+            <div class="card-body">
+                {% if requests_per_equipment %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Equipment</th>
+                                    <th>Serial Number</th>
+                                    <th>Category</th>
+                                    <th>Request Count</th>
+                                    <th>Visual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for equipment in requests_per_equipment %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'maintenance:equipment_list' %}?search={{ equipment.equipment_name }}" 
+                                               class="text-decoration-none">
+                                                <strong>{{ equipment.equipment_name }}</strong>
+                                            </a>
+                                        </td>
+                                        <td>{{ equipment.serial_number }}</td>
+                                        <td><span class="badge bg-secondary">{{ equipment.category }}</span></td>
+                                        <td>
+                                            <span class="badge bg-success">{{ equipment.request_count }}</span>
+                                        </td>
+                                        <td>
+                                            {% with max_count=requests_per_equipment.0.request_count %}
+                                                {% if max_count > 0 %}
+                                                    {% widthratio equipment.request_count max_count 100 as percentage %}
+                                                    <div class="progress progress-bar-custom">
+                                                        <div class="progress-bar bg-success" 
+                                                             role="progressbar" 
+                                                             style="width: {{ percentage }}%"
+                                                             aria-valuenow="{{ equipment.request_count }}" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="{{ max_count }}">
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No equipment request data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Average Repair Duration Details -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Repair Duration Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h4 class="mb-0">
+                                {% if avg_repair_duration %}
+                                    {{ avg_repair_duration|floatformat:2 }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h4>
+                            <p class="text-muted mb-0">Average Hours</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h4 class="mb-0">{{ requests_with_duration }}</h4>
+                            <p class="text-muted mb-0">Requests with Duration Data</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h4 class="mb-0">{{ repaired_requests }}</h4>
+                            <p class="text-muted mb-0">Total Repaired Requests</p>
+                        </div>
+                    </div>
+                </div>
+                {% if not avg_repair_duration %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        No repair duration data available. Technicians need to enter duration hours when completing requests.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Performance Chart (Simple HTML) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Team Performance Overview</h5>
+            </div>
+            <div class="card-body">
+                {% if team_stats %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Team</th>
+                                    <th>Total Requests</th>
+                                    <th>Status Breakdown</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in team_stats %}
+                                    <tr>
+                                        <td><strong>{{ stat.team.team_name }}</strong></td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ stat.total }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <span class="badge bg-warning">{{ stat.new }} New</span>
+                                                <span class="badge bg-info">{{ stat.in_progress }} In Progress</span>
+                                                <span class="badge bg-success">{{ stat.repaired }} Repaired</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No team performance data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        {% if user.profile.role == 'Admin' %}
+            <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'maintenance:manager_dashboard' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Manager Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,200 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Summary Cards -->
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'maintenance:equipment_list' %}" class="text-decoration-none">
+            <div class="card summary-card card-primary" style="cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Equipment</h6>
+                            <h2 class="mb-0">{{ total_equipment }}</h2>
+                        </div>
+                        <div class="text-primary" style="font-size: 2.5rem;">
+                            <i class="bi bi-tools"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'maintenance:request_list' %}" class="text-decoration-none">
+            <div class="card summary-card card-success" style="cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Open Requests</h6>
+                            <h2 class="mb-0">{{ open_requests }}</h2>
+                        </div>
+                        <div class="text-success" style="font-size: 2.5rem;">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'maintenance:request_list' %}?status=In Progress" class="text-decoration-none">
+            <div class="card summary-card card-warning" style="cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Overdue Requests</h6>
+                            <h2 class="mb-0">{{ overdue_requests }}</h2>
+                        </div>
+                        <div class="text-warning" style="font-size: 2.5rem;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'maintenance:preventive_calendar' %}" class="text-decoration-none">
+            <div class="card summary-card card-danger" style="cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Upcoming Preventive</h6>
+                            <h2 class="mb-0">{{ upcoming_preventive }}</h2>
+                        </div>
+                        <div class="text-danger" style="font-size: 2.5rem;">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'maintenance:request_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-list-check"></i> View All Requests
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'maintenance:preventive_maintenance' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-calendar-plus"></i> Create Preventive Maintenance
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'maintenance:preventive_calendar' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-calendar3"></i> View Calendar
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'maintenance:request_list' %}?status=New" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-exclamation-circle"></i> New Requests
+                        </a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'maintenance:reports_dashboard' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-graph-up"></i> View Reports
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'maintenance:manager_technician_reports' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-people"></i> Technician Reports
+                        </a>
+                    </div>
+                    {% if user.profile.role == 'Admin' %}
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-shield-check"></i> Admin Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Completed Tasks with Duration -->
+{% if recent_completed %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Recent Completed Tasks</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Equipment</th>
+                                <th>Technician</th>
+                                <th>Completed Date</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in recent_completed %}
+                                <tr>
+                                    <td>{{ request.subject }}</td>
+                                    <td>{{ request.equipment.equipment_name }}</td>
+                                    <td>
+                                        {% if request.assigned_technician %}
+                                            {{ request.assigned_technician.get_full_name|default:request.assigned_technician.username }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.completed_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <strong class="text-success">{{ request.duration_hours }} hrs</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'maintenance:request_update' request.pk %}" 
+                                           class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Total Hours Spent Summary -->
+{% if total_hours_spent %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4>Total Hours Spent on Completed Tasks</h4>
+                <h2 class="text-primary">{{ total_hours_spent }} hours</h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
