@@ -1,0 +1,178 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Maintenance Requests{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filter Requests</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="team" class="form-label">Team</label>
+                <select name="team" id="team" class="form-select">
+                    <option value="">All Teams</option>
+                    {% for team in teams %}
+                        <option value="{{ team.id }}" {% if current_team == team.id|stringformat:"s" %}selected{% endif %}>
+                            {{ team.team_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="{% url 'maintenance:request_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">All Maintenance Requests</h5>
+        <span class="badge bg-primary">{{ requests|length }} request(s)</span>
+    </div>
+    <div class="card-body">
+        {% if requests %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Equipment</th>
+                            <th>Team</th>
+                            <th>Technician</th>
+                            <th>Status</th>
+                            <th>Scheduled Date</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                            <tr>
+                                <td>
+                                    <strong>{{ request.subject }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ request.request_type }}</small>
+                                </td>
+                                <td>
+                                    <a href="{% url 'maintenance:equipment_list' %}?search={{ request.equipment.equipment_name }}" 
+                                       class="text-decoration-none">
+                                        {{ request.equipment.equipment_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if request.maintenance_team %}
+                                        <a href="{% url 'maintenance:admin_teams' %}?active=true" 
+                                           class="text-decoration-none">
+                                            {{ request.maintenance_team.team_name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.assigned_technician %}
+                                        {{ request.assigned_technician.get_full_name|default:request.assigned_technician.username }}
+                                    {% else %}
+                                        <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.stage == 'New' %}
+                                        <span class="badge bg-warning">{{ request.stage }}</span>
+                                    {% elif request.stage == 'In Progress' %}
+                                        <span class="badge bg-info">{{ request.stage }}</span>
+                                    {% elif request.stage == 'Repaired' %}
+                                        <span class="badge bg-success">{{ request.stage }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ request.stage }}</span>
+                                    {% endif %}
+                                    {% if request.is_overdue %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.scheduled_date %}
+                                        {{ request.scheduled_date|date:"M d, Y" }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.duration_hours %}
+                                        <strong class="text-success">{{ request.duration_hours }} hrs</strong>
+                                    {% elif request.actual_start_time %}
+                                        <span class="text-info small">In Progress...</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'maintenance:request_update' request.pk %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i> Update
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}{% if current_team %}&team={{ current_team }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_team %}&team={{ current_team }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_team %}&team={{ current_team }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_team %}&team={{ current_team }}{% endif %}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No maintenance requests found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

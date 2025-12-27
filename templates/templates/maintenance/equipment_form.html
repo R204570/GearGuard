@@ -1,0 +1,186 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}{% if object %}Edit Equipment{% else %}Add New Equipment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-{% if object %}pencil{% else %}plus-circle{% endif %}"></i>
+                    {% if object %}Edit Equipment{% else %}Add New Equipment{% endif %}
+                </h5>
+                {% if object %}
+                    <a href="{% url 'maintenance:request_list' %}?equipment={{ object.pk }}" 
+                       class="btn btn-sm btn-primary">
+                        <i class="bi bi-tools"></i> Maintenance 
+                        <span class="badge bg-light text-dark">{{ object.maintenance_requests.count }}</span>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.equipment_name.id_for_label }}" class="form-label">
+                                Equipment Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.equipment_name }}
+                            {% if form.equipment_name.errors %}
+                                <div class="text-danger small">{{ form.equipment_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.serial_number.id_for_label }}" class="form-label">
+                                Serial Number <span class="text-danger">*</span>
+                            </label>
+                            {{ form.serial_number }}
+                            {% if form.serial_number.errors %}
+                                <div class="text-danger small">{{ form.serial_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                Category <span class="text-danger">*</span>
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small">{{ form.category.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">e.g., Machinery, Computer, Vehicle</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
+                            {{ form.department }}
+                            {% if form.department.errors %}
+                                <div class="text-danger small">{{ form.department.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger small">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.warranty_expiry.id_for_label }}" class="form-label">Warranty Expiry Date</label>
+                            {{ form.warranty_expiry }}
+                            {% if form.warranty_expiry.errors %}
+                                <div class="text-danger small">{{ form.warranty_expiry.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.purchase_date.id_for_label }}" class="form-label">Purchase Date</label>
+                            {{ form.purchase_date }}
+                            {% if form.purchase_date.errors %}
+                                <div class="text-danger small">{{ form.purchase_date.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.maintenance_team.id_for_label }}" class="form-label">
+                                Maintenance Team <span class="text-danger">*</span>
+                            </label>
+                            {{ form.maintenance_team }}
+                            {% if form.maintenance_team.errors %}
+                                <div class="text-danger small">{{ form.maintenance_team.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.maintenance_interval_days.id_for_label }}" class="form-label">
+                                Preventive Maintenance Interval (Days)
+                            </label>
+                            {{ form.maintenance_interval_days }}
+                            {% if form.maintenance_interval_days.errors %}
+                                <div class="text-danger small">{{ form.maintenance_interval_days.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Number of days between preventive maintenance cycles (e.g., 30 for monthly, 90 for quarterly, 180 for semi-annual, 365 for annual)
+                            </small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.default_technician.id_for_label }}" class="form-label">Default Technician</label>
+                            {{ form.default_technician }}
+                            {% if form.default_technician.errors %}
+                                <div class="text-danger small">{{ form.default_technician.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional - technician assigned by default for maintenance requests</small>
+                        </div>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label for="{{ form.specifications.id_for_label }}" class="form-label">Specifications</label>
+                        {{ form.specifications }}
+                        {% if form.specifications.errors %}
+                            <div class="text-danger small">{{ form.specifications.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Optional - additional equipment details</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'maintenance:equipment_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> {% if object %}Update Equipment{% else %}Create Equipment{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i> Fill in the required fields marked with <span class="text-danger">*</span>.
+                </p>
+                <hr>
+                <h6>Required Fields:</h6>
+                <ul class="small">
+                    <li>Equipment Name</li>
+                    <li>Serial Number (must be unique)</li>
+                    <li>Category</li>
+                    <li>Maintenance Team</li>
+                </ul>
+                <hr>
+                <h6>Optional Fields:</h6>
+                <ul class="small">
+                    <li>Department</li>
+                    <li>Location</li>
+                    <li>Warranty Expiry Date</li>
+                    <li>Purchase Date</li>
+                    <li>Preventive Maintenance Interval</li>
+                    <li>Default Technician</li>
+                    <li>Specifications</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

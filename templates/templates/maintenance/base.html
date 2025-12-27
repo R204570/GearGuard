@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GearGuard - Maintenance Tracker{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #714b67;
+            --primary-dark: #5a3d52;
+            --primary-light: #8a5f7a;
+            --primary-gradient: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            --secondary-color: #17a2b8;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --dark-color: #2c3e50;
+            --light-bg: #f8f9fa;
+            --border-color: #e1e8ed;
+            --sidebar-bg: #1e2732;
+            --sidebar-hover: #252f3d;
+            --text-muted: #6c757d;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            background-attachment: fixed;
+            color: #2c3e50;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Form Elements */
+        .form-control, .form-select {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.1);
+            outline: none;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Custom Scrollbar for Main Content */
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+        
+        /* Top Navigation Bar */
+        .top-navbar {
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.98);
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-brand .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.35rem;
+            box-shadow: 0 4px 12px rgba(113, 75, 103, 0.25);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover .logo-icon {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 6px 16px rgba(113, 75, 103, 0.35);
+        }
+        
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark-color);
+            transition: all 0.3s ease;
+        }
+        
+        .user-menu:hover {
+            background: var(--border-color);
+            color: var(--dark-color);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 8px rgba(113, 75, 103, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .user-menu:hover .user-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(113, 75, 103, 0.3);
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            line-height: 1.2;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .badge-role {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-admin { background: #dc3545; color: white; }
+        .badge-manager { background: #17a2b8; color: white; }
+        .badge-technician { background: #28a745; color: white; }
+        .badge-user { background: #6c757d; color: white; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            min-height: calc(100vh - 60px);
+            background: var(--sidebar-bg);
+            position: fixed;
+            left: 0;
+            top: 60px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .sidebar-content {
+            padding: 1rem 0;
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+        
+        .nav-item {
+            margin: 0.25rem 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            gap: 0.875rem;
+            font-size: 0.9rem;
+            position: relative;
+            margin: 0.2rem 0.5rem;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: white;
+            border-radius: 0 3px 3px 0;
+            transition: height 0.3s ease;
+        }
+        
+        .nav-link i {
+            width: 22px;
+            text-align: center;
+            font-size: 1.15rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: var(--sidebar-hover);
+            color: white;
+            padding-left: 1.25rem;
+            transform: translateX(4px);
+        }
+        
+        .nav-link:hover i {
+            transform: scale(1.1);
+        }
+        
+        .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 16px rgba(113, 75, 103, 0.4);
+            padding-left: 1.25rem;
+        }
+        
+        .nav-link.active::before {
+            height: 60%;
+        }
+        
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            min-height: calc(100vh - 60px);
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.sidebar-collapsed {
+            margin-left: 70px;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 2px solid var(--border-color);
+            position: relative;
+        }
+        
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+        
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            font-weight: 400;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Summary Cards */
+        .summary-card {
+            border-left: 4px solid;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(113, 75, 103, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .summary-card:hover::before {
+            opacity: 1;
+        }
+        
+        .card-primary { border-left-color: var(--primary-color); }
+        .card-success { border-left-color: var(--success-color); }
+        .card-warning { border-left-color: var(--warning-color); }
+        .card-danger { border-left-color: var(--danger-color); }
+        .card-info { border-left-color: var(--info-color); }
+        
+        /* Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-gradient);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(113, 75, 103, 0.4);
+        }
+        
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        /* Tables */
+        .table {
+            margin-bottom: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 1.25rem 1rem;
+            position: relative;
+        }
+        
+        .table thead th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .table thead th:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .table tbody td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(113, 75, 103, 0.03) 0%, transparent 100%);
+            border-left-color: var(--primary-color);
+            transform: translateX(2px);
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-success {
+            border-left-color: var(--success-color);
+            background: #f0f9f4;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            border-left-color: var(--danger-color);
+            background: #fff5f5;
+            color: #721c24;
+        }
+        
+        .alert-warning {
+            border-left-color: var(--warning-color);
+            background: #fffbf0;
+            color: #856404;
+        }
+        
+        .alert-info {
+            border-left-color: var(--info-color);
+            background: #f0f9ff;
+            color: #0c5460;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Toggle Button */
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--dark-color);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: var(--light-bg);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-content">
+            <div class="d-flex align-items-center gap-3">
+                <button class="sidebar-toggle d-md-none" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <a href="{% if user.is_authenticated %}{% if user.profile.role == 'Admin' %}{% url 'maintenance:admin_dashboard' %}{% elif user.profile.role == 'Manager' %}{% url 'maintenance:manager_dashboard' %}{% elif user.profile.role == 'Technician' %}{% url 'maintenance:technician_dashboard' %}{% elif user.profile.role == 'User' %}{% url 'maintenance:user_dashboard' %}{% endif %}{% else %}{% url 'maintenance:login' %}{% endif %}" class="navbar-brand">
+                    <div class="logo-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <span>GearGuard</span>
+                </a>
+            </div>
+            
+            {% if user.is_authenticated %}
+            <div class="navbar-actions">
+                <a href="{% url 'maintenance:logout' %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                </a>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        {{ user.first_name.0|default:user.username.0|upper }}
+                    </div>
+                    <div class="user-info d-none d-md-block">
+                        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="user-role">
+                            <span class="badge badge-{{ user.profile.role|lower }} badge-role">{{ user.profile.role }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            {% if user.profile.role == 'Admin' %}
+                <div class="nav-section">
+                    <div class="nav-section-title">Administration</div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" 
+                               href="{% url 'maintenance:admin_dashboard' %}">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Admin Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_equipment' %}active{% endif %}" 
+                               href="{% url 'maintenance:admin_equipment' %}">
+                                <i class="bi bi-tools"></i>
+                                <span>Equipment</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_teams' %}active{% endif %}" 
+                               href="{% url 'maintenance:admin_teams' %}">
+                                <i class="bi bi-people"></i>
+                                <span>Teams</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}" 
+                               href="{% url 'maintenance:admin_reports' %}">
+                                <i class="bi bi-graph-up"></i>
+                                <span>Reports</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_manager_hours' %}active{% endif %}" 
+                               href="{% url 'maintenance:admin_manager_hours' %}">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Manager Hours</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'user_registrations' %}active{% endif %}" 
+                               href="{% url 'maintenance:user_registrations' %}">
+                                <i class="bi bi-person-plus"></i>
+                                <span>Registrations</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if user.profile.role == 'Manager' or user.profile.role == 'Admin' %}
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <ul class="nav flex-column">
+                        {% if user.profile.role == 'Manager' %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}" 
+                               href="{% url 'maintenance:manager_dashboard' %}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'request_list' %}active{% endif %}" 
+                               href="{% url 'maintenance:request_list' %}">
+                                <i class="bi bi-list-check"></i>
+                                <span>Requests</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'preventive_maintenance' %}active{% endif %}" 
+                               href="{% url 'maintenance:preventive_maintenance' %}">
+                                <i class="bi bi-calendar-plus"></i>
+                                <span>Preventive</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'preventive_calendar' %}active{% endif %}" 
+                               href="{% url 'maintenance:preventive_calendar' %}">
+                                <i class="bi bi-calendar3"></i>
+                                <span>Calendar</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'kanban_board' %}active{% endif %}" 
+                               href="{% url 'maintenance:kanban_board' %}">
+                                <i class="bi bi-kanban"></i>
+                                <span>Kanban</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'reports_dashboard' %}active{% endif %}" 
+                               href="{% url 'maintenance:reports_dashboard' %}">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manager_technician_reports' %}active{% endif %}" 
+                               href="{% url 'maintenance:manager_technician_reports' %}">
+                                <i class="bi bi-people"></i>
+                                <span>Tech Reports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if user.profile.role == 'Technician' %}
+                <div class="nav-section">
+                    <div class="nav-section-title">Work</div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'technician_dashboard' %}active{% endif %}" 
+                               href="{% url 'maintenance:technician_dashboard' %}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if user.profile.role == 'User' %}
+                <div class="nav-section">
+                    <div class="nav-section-title">My Requests</div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'user_dashboard' %}active{% endif %}" 
+                               href="{% url 'maintenance:user_dashboard' %}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'user_create_request' %}active{% endif %}" 
+                               href="{% url 'maintenance:user_create_request' %}">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>New Request</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content {% if not user.is_authenticated %}no-sidebar{% endif %}" id="mainContent">
+        <div class="page-header">
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            {% block breadcrumb %}{% endblock %}
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{% if message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+        
+        // Collapse sidebar on mobile when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('show')) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

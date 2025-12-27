@@ -1,0 +1,122 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Update Maintenance Request{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Update Request: {{ object.subject }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Equipment</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="{{ object.equipment.equipment_name }}" disabled>
+                            <a href="{% url 'maintenance:equipment_list' %}?search={{ object.equipment.equipment_name }}" 
+                               class="btn btn-outline-secondary" title="View Equipment">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.assigned_technician.id_for_label }}" class="form-label">
+                            Assigned Technician
+                        </label>
+                        {{ form.assigned_technician }}
+                        {% if form.assigned_technician.errors %}
+                            <div class="text-danger">{{ form.assigned_technician.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.stage.id_for_label }}" class="form-label">Status</label>
+                        {{ form.stage }}
+                        {% if form.stage.errors %}
+                            <div class="text-danger">{{ form.stage.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Status flow: New → In Progress → Repaired
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.priority.id_for_label }}" class="form-label">Priority</label>
+                        {{ form.priority }}
+                        {% if form.priority.errors %}
+                            <div class="text-danger">{{ form.priority.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'maintenance:request_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Request Details</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Type:</strong> {{ object.request_type }}</p>
+                <p><strong>Created:</strong> {{ object.created_at|date:"M d, Y H:i" }}</p>
+                <p><strong>Created By:</strong> 
+                    <a href="{% url 'maintenance:request_list' %}?search={{ object.created_by.username }}" 
+                       class="text-decoration-none">
+                        {{ object.created_by.get_full_name|default:object.created_by.username }}
+                    </a>
+                </p>
+                <p><strong>Equipment:</strong> 
+                    <a href="{% url 'maintenance:equipment_list' %}?search={{ object.equipment.equipment_name }}" 
+                       class="text-decoration-none">
+                        {{ object.equipment.equipment_name }}
+                    </a>
+                </p>
+                {% if object.scheduled_date %}
+                    <p><strong>Scheduled:</strong> {{ object.scheduled_date|date:"M d, Y" }}</p>
+                {% endif %}
+                
+                <!-- Task Timing Information -->
+                {% if object.actual_start_time or object.actual_end_time or object.duration_hours %}
+                <hr>
+                <h6>Task Timing</h6>
+                {% if object.actual_start_time %}
+                    <p><strong>Started:</strong> {{ object.actual_start_time|date:"M d, Y H:i" }}</p>
+                {% endif %}
+                {% if object.actual_end_time %}
+                    <p><strong>Ended:</strong> {{ object.actual_end_time|date:"M d, Y H:i" }}</p>
+                {% endif %}
+                {% if object.duration_hours %}
+                    <p><strong>Duration:</strong> 
+                        <span class="badge bg-success">{{ object.duration_hours }} hours</span>
+                    </p>
+                {% elif object.actual_start_time and object.stage == 'In Progress' %}
+                    <p class="text-info small">
+                        <i class="bi bi-info-circle"></i> Task in progress...
+                    </p>
+                {% endif %}
+                {% endif %}
+                
+                {% if object.description %}
+                    <hr>
+                    <p><strong>Description:</strong><br>{{ object.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

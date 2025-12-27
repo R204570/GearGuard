@@ -1,0 +1,58 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}Delete Equipment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Delete</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>Warning!</strong> This action cannot be undone.
+                </div>
+
+                <p>Are you sure you want to delete the following equipment?</p>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6><strong>{{ object.equipment_name }}</strong></h6>
+                        <p class="mb-1"><strong>Serial Number:</strong> {{ object.serial_number }}</p>
+                        <p class="mb-1"><strong>Category:</strong> {{ object.category }}</p>
+                        {% if object.department %}
+                            <p class="mb-1"><strong>Department:</strong> {{ object.department }}</p>
+                        {% endif %}
+                        {% if object.location %}
+                            <p class="mb-1"><strong>Location:</strong> {{ object.location }}</p>
+                        {% endif %}
+                        <p class="mb-0"><strong>Maintenance Team:</strong> {{ object.maintenance_team.team_name }}</p>
+                    </div>
+                </div>
+
+                {% if object.maintenance_requests.count > 0 %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> This equipment has <strong>{{ object.maintenance_requests.count }}</strong> 
+                        associated maintenance request{{ object.maintenance_requests.count|pluralize }}. 
+                        Deleting this equipment will also delete all associated requests.
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'maintenance:equipment_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Yes, Delete Equipment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

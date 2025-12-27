@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - GearGuard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .signup-card {
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card signup-card">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h2><i class="bi bi-person-plus text-primary"></i> Sign Up</h2>
+                            <p class="text-muted">Create your GearGuard account</p>
+                        </div>
+
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.username.id_for_label }}" class="form-label">
+                                        Username <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="text-danger small">{{ form.username.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                                        Email <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger small">{{ form.first_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger small">{{ form.last_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.password.id_for_label }}" class="form-label">
+                                        Password <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.password }}
+                                    {% if form.password.errors %}
+                                        <div class="text-danger small">{{ form.password.errors }}</div>
+                                    {% endif %}
+                                    {% if form.password.help_text %}
+                                        <small class="form-text text-muted">{{ form.password.help_text }}</small>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">
+                                        Confirm Password <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.password_confirm }}
+                                    {% if form.password_confirm.errors %}
+                                        <div class="text-danger small">{{ form.password_confirm.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.requested_role.id_for_label }}" class="form-label">
+                                    Requested Role <span class="text-danger">*</span>
+                                </label>
+                                {{ form.requested_role }}
+                                {% if form.requested_role.errors %}
+                                    <div class="text-danger small">{{ form.requested_role.errors }}</div>
+                                {% endif %}
+                                {% if form.requested_role.help_text %}
+                                    <small class="form-text text-muted">{{ form.requested_role.help_text }}</small>
+                                {% endif %}
+                            </div>
+
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-person-plus"></i> Sign Up
+                            </button>
+                        </form>
+
+                        <div class="text-center">
+                            <small class="text-muted">
+                                Already have an account? 
+                                <a href="{% url 'maintenance:login' %}" class="text-decoration-none">Login here</a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

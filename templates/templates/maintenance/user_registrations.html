@@ -1,0 +1,237 @@
+{% extends 'maintenance/base.html' %}
+
+{% block page_title %}User Registration Requests{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-people"></i> User Registration Requests</h5>
+        <div>
+            {% if pending_count > 0 %}
+                <span class="badge bg-warning me-2">{{ pending_count }} Pending</span>
+            {% endif %}
+            <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <div class="mb-3">
+            <a href="{% url 'maintenance:user_registrations' %}" 
+               class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                All
+            </a>
+            <a href="{% url 'maintenance:user_registrations' %}?status=Pending" 
+               class="btn btn-sm {% if current_status == 'Pending' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Pending
+            </a>
+            <a href="{% url 'maintenance:user_registrations' %}?status=Approved" 
+               class="btn btn-sm {% if current_status == 'Approved' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Approved
+            </a>
+            <a href="{% url 'maintenance:user_registrations' %}?status=Rejected" 
+               class="btn btn-sm {% if current_status == 'Rejected' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Rejected
+            </a>
+        </div>
+
+        <!-- Registrations Table -->
+        {% if registrations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Requested Role</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registration in registrations %}
+                            <tr>
+                                <td><strong>{{ registration.username }}</strong></td>
+                                <td>{{ registration.email }}</td>
+                                <td>{{ registration.first_name }} {{ registration.last_name }}</td>
+                                <td><span class="badge bg-info">{{ registration.requested_role }}</span></td>
+                                <td>
+                                    {% if registration.status == 'Pending' %}
+                                        <span class="badge bg-warning">{{ registration.status }}</span>
+                                    {% elif registration.status == 'Approved' %}
+                                        <span class="badge bg-success">{{ registration.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ registration.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ registration.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if registration.status == 'Pending' %}
+                                        <button class="btn btn-sm btn-success approve-btn" 
+                                                data-id="{{ registration.pk }}"
+                                                data-username="{{ registration.username }}">
+                                            <i class="bi bi-check-circle"></i> Approve
+                                        </button>
+                                        <button class="btn btn-sm btn-danger reject-btn" 
+                                                data-id="{{ registration.pk }}"
+                                                data-username="{{ registration.username }}">
+                                            <i class="bi bi-x-circle"></i> Reject
+                                        </button>
+                                    {% elif registration.status == 'Approved' %}
+                                        <small class="text-muted">
+                                            Approved by {{ registration.approved_by.username|default:"Admin" }}<br>
+                                            {{ registration.approved_at|date:"M d, Y" }}
+                                        </small>
+                                    {% else %}
+                                        <small class="text-muted">
+                                            Rejected by {{ registration.approved_by.username|default:"Admin" }}<br>
+                                            {{ registration.approved_at|date:"M d, Y" }}
+                                        </small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No registration requests found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Registration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to reject the registration for <strong id="rejectUsername"></strong>?</p>
+                    <div class="mb-3">
+                        <label for="rejection_reason" class="form-label">Rejection Reason (Optional)</label>
+                        <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Approve button handler
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const username = this.dataset.username;
+            
+            if (confirm(`Are you sure you want to approve the registration for "${username}"?`)) {
+                fetch(`/admin/registrations/${id}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+
+    // Reject button handler
+    const rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    document.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const username = this.dataset.username;
+            
+            document.getElementById('rejectUsername').textContent = username;
+            document.getElementById('rejectForm').action = `/admin/registrations/${id}/reject/`;
+            rejectModal.show();
+        });
+    });
+
+    // Handle reject form submission
+    document.getElementById('rejectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                rejectModal.hide();
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %}
+

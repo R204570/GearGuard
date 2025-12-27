@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | GearGuard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .error-container {
+            width: 100%;
+            max-width: 600px;
+            animation: fadeInUp 0.6s ease-out;
+            text-align: center;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .error-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .error-header {
+            background: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .error-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .error-icon-wrapper {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .error-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            width: 120px;
+            height: 120px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            letter-spacing: -2px;
+        }
+        
+        .error-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .error-message {
+            font-size: 1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
+        }
+        
+        .error-body {
+            padding: 3rem 2rem;
+        }
+        
+        .btn-group-custom {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn-custom {
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-custom::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-custom:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(113, 75, 103, 0.4);
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(113, 75, 103, 0.5);
+            color: white;
+        }
+        
+        .btn-outline-custom {
+            background: white;
+            color: #714b67;
+            border: 2px solid #714b67;
+        }
+        
+        .btn-outline-custom:hover {
+            background: #714b67;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(113, 75, 103, 0.3);
+        }
+        
+        .btn-secondary-custom {
+            background: #f8f9fa;
+            color: #2c3e50;
+            border: 2px solid #e1e8ed;
+        }
+        
+        .btn-secondary-custom:hover {
+            background: #e9ecef;
+            color: #2c3e50;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .help-text {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e1e8ed;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .help-text i {
+            color: #714b67;
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 576px) {
+            .error-header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .error-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .error-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 4rem;
+            }
+            
+            .btn-group-custom {
+                flex-direction: column;
+            }
+            
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-header">
+                <div class="error-icon-wrapper">
+                    <div class="error-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="error-code">404</div>
+                <h1 class="error-title">Page Not Found</h1>
+                <p class="error-message">
+                    The page you're looking for doesn't exist or has been moved.
+                </p>
+            </div>
+            
+            <div class="error-body">
+                <p style="color: #6c757d; font-size: 1rem; line-height: 1.8; margin-bottom: 1rem;">
+                    Oops! It seems you've stumbled upon a page that doesn't exist. 
+                    The URL might be incorrect, or the page may have been removed or relocated.
+                </p>
+                
+                <div class="btn-group-custom">
+                    <button onclick="goBack()" class="btn btn-primary-custom btn-custom">
+                        <i class="bi bi-arrow-left"></i> Go Back
+                    </button>
+                    {% url 'maintenance:home' as home_url %}
+                    {% if home_url %}
+                        <a href="{{ home_url }}" class="btn btn-outline-custom btn-custom">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    {% else %}
+                        <a href="/" class="btn btn-outline-custom btn-custom">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                        {% if user.profile.role == 'Admin' %}
+                            <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-secondary-custom btn-custom">
+                                <i class="bi bi-shield-check"></i> Admin Dashboard
+                            </a>
+                        {% elif user.profile.role == 'Manager' %}
+                            <a href="{% url 'maintenance:manager_dashboard' %}" class="btn btn-secondary-custom btn-custom">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        {% elif user.profile.role == 'Technician' %}
+                            <a href="{% url 'maintenance:technician_dashboard' %}" class="btn btn-secondary-custom btn-custom">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        {% elif user.profile.role == 'User' %}
+                            <a href="{% url 'maintenance:user_dashboard' %}" class="btn btn-secondary-custom btn-custom">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{% url 'maintenance:login' %}" class="btn btn-secondary-custom btn-custom">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'maintenance:login' %}" class="btn btn-secondary-custom btn-custom">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="help-text">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Need help?</strong> If you believe this is an error, please contact the system administrator.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                {% url 'maintenance:home' as home_url %}
+                var homeUrl = "{% if home_url %}{{ home_url }}{% else %}/{% endif %}";
+                window.location.href = homeUrl;
+            }
+        }
+    </script>
+</body>
+</html>
