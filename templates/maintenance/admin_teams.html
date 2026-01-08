@@ -67,8 +67,8 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="/admin/maintenance/maintenanceteam/{{ team.id }}/change/" 
-                                       class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <a href="{% url 'maintenance:admin_team_update' team.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i> Edit
                                     </a>
                                 </td>
@@ -116,12 +116,5 @@
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
-        </a>
-    </div>
-</div>
 {% endblock %}
 

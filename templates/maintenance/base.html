@@ -221,33 +221,37 @@
         /* Sidebar */
         .sidebar {
             width: 260px;
-            min-height: calc(100vh - 60px);
+            max-height: calc(100vh - 60px);
+            height: calc(100vh - 60px);
             background: var(--sidebar-bg);
             position: fixed;
             left: 0;
             top: 60px;
-            overflow-y: auto;
+            overflow-y: scroll;
             overflow-x: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
         }
         
         .sidebar::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
         
         .sidebar::-webkit-scrollbar-track {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
         }
         
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
         }
         
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
         }
         
         .sidebar.collapsed {
@@ -256,6 +260,7 @@
         
         .sidebar-content {
             padding: 1rem 0;
+            flex-shrink: 0;
         }
         
         .nav-section {
@@ -728,11 +733,10 @@
                 </div>
             {% endif %}
             
-            {% if user.profile.role == 'Manager' or user.profile.role == 'Admin' %}
+            {% if user.profile.role == 'Manager' %}
                 <div class="nav-section">
                     <div class="nav-section-title">Management</div>
                     <ul class="nav flex-column">
-                        {% if user.profile.role == 'Manager' %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}" 
                                href="{% url 'maintenance:manager_dashboard' %}">
@@ -740,7 +744,70 @@
                                 <span>Dashboard</span>
                             </a>
                         </li>
-                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'request_list' %}active{% endif %}" 
+                               href="{% url 'maintenance:request_list' %}">
+                                <i class="bi bi-list-check"></i>
+                                <span>Requests</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'equipment_list' %}active{% endif %}" 
+                               href="{% url 'maintenance:equipment_list' %}">
+                                <i class="bi bi-tools"></i>
+                                <span>Equipment</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name in 'admin_teams,admin_team_create' %}active{% endif %}" 
+                               href="{% url 'maintenance:admin_teams' %}">
+                                <i class="bi bi-people"></i>
+                                <span>Teams</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'preventive_maintenance' %}active{% endif %}" 
+                               href="{% url 'maintenance:preventive_maintenance' %}">
+                                <i class="bi bi-calendar-plus"></i>
+                                <span>Preventive</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'preventive_calendar' %}active{% endif %}" 
+                               href="{% url 'maintenance:preventive_calendar' %}">
+                                <i class="bi bi-calendar3"></i>
+                                <span>Calendar</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'kanban_board' %}active{% endif %}" 
+                               href="{% url 'maintenance:kanban_board' %}">
+                                <i class="bi bi-kanban"></i>
+                                <span>Kanban</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'reports_dashboard' %}active{% endif %}" 
+                               href="{% url 'maintenance:reports_dashboard' %}">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manager_technician_reports' %}active{% endif %}" 
+                               href="{% url 'maintenance:manager_technician_reports' %}">
+                                <i class="bi bi-people"></i>
+                                <span>Tech Reports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if user.profile.role == 'Admin' %}
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'request_list' %}active{% endif %}" 
                                href="{% url 'maintenance:request_list' %}">

@@ -20,38 +20,74 @@
     }
     .calendar-day {
         background-color: white;
-        min-height: 100px;
-        padding: 5px;
+        min-height: 120px;
+        padding: 8px;
         position: relative;
+        overflow-y: auto;
     }
     .calendar-day.empty {
         background-color: #f8f9fa;
     }
+    .calendar-day.today {
+        background-color: #fff3cd;
+        border: 2px solid #ffc107;
+    }
     .calendar-day-number {
         font-weight: bold;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        font-size: 1rem;
     }
-    .calendar-day.today {
-        background-color: #e7f3ff;
-        border: 2px solid #0d6efd;
+    .today-badge {
+        display: inline-block;
+        background: #ffc107;
+        color: #000;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 5px;
     }
     .calendar-request {
         font-size: 0.75rem;
-        padding: 2px 5px;
-        margin: 2px 0;
-        border-radius: 3px;
-        background-color: #0d6efd;
-        color: white;
+        padding: 4px 6px;
+        margin: 3px 0;
+        border-radius: 4px;
         cursor: pointer;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        border-left: 3px solid;
+        transition: all 0.2s ease;
     }
+    
+    /* Color coding for request types */
+    .calendar-request.scheduled {
+        background-color: #e3f2fd;
+        color: #1565c0;
+        border-left-color: #1976d2;
+    }
+    
+    .calendar-request.interval {
+        background-color: #fff3e0;
+        color: #e65100;
+        border-left-color: #f57c00;
+    }
+    
     .calendar-request:hover {
-        opacity: 0.8;
+        opacity: 0.9;
+        transform: translateX(2px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
+    
     .calendar-day:hover {
-        background-color: #f0f0f0;
+        background-color: #f5f5f5;
+    }
+    
+    .empty-slot {
+        text-align: center;
+        color: #999;
+        font-size: 0.7rem;
+        margin-top: 10px;
     }
 </style>
 <script>
@@ -94,31 +130,41 @@ function scheduleMaintenance(date) {
             <!-- Calendar Days -->
             {% for day_data in calendar_days %}
                 {% if day_data %}
-                    <div class="calendar-day" 
-                         data-date="{{ day_data.date|date:'Y-m-d' }}"
-                         onclick="scheduleMaintenance('{{ day_data.date|date:'Y-m-d' }}')"
-                         style="cursor: pointer;">
+                    <div class="calendar-day {% if day_data.date == today %}today{% endif %}" 
+                         data-date="{{ day_data.date|date:'Y-m-d' }}">
                         <div class="calendar-day-number">
                             {{ day_data.day }}
                             {% if day_data.date == today %}
-                                <span class="badge bg-primary">Today</span>
+                                <span class="today-badge">Today</span>
                             {% endif %}
                         </div>
+                        
                         {% for request in day_data.requests %}
-                            <a href="{% url 'maintenance:request_update' request.pk %}" 
-                               class="text-decoration-none text-white"
-                               onclick="event.stopPropagation();">
-                                <div class="calendar-request" title="{{ request.subject }} - {{ request.equipment.equipment_name }}">
-                                    <strong>{{ request.equipment.equipment_name|truncatechars:15 }}</strong>
+                            {% if request.pk %}
+                                <a href="{% url 'maintenance:request_update' request.pk %}" 
+                                   class="text-decoration-none"
+                                   title="{{ request.subject }} - {{ request.equipment_name }}">
+                                    <div class="calendar-request {% if request.type == 'scheduled' %}scheduled{% else %}interval{% endif %}">
+                                        <strong>{{ request.equipment_name|truncatechars:20 }}</strong>
+                                        {% if request.assigned_technician %}
+                                            <br><small>{{ request.assigned_technician.get_full_name|default:request.assigned_technician.username|truncatechars:12 }}</small>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            {% else %}
+                                <div class="calendar-request {% if request.type == 'scheduled' %}scheduled{% else %}interval{% endif %}"
+                                     title="{{ request.subject }}">
+                                    <strong>{{ request.equipment_name|truncatechars:20 }}</strong>
                                     {% if request.assigned_technician %}
                                         <br><small>{{ request.assigned_technician.get_full_name|default:request.assigned_technician.username|truncatechars:12 }}</small>
                                     {% endif %}
                                 </div>
-                            </a>
+                            {% endif %}
                         {% endfor %}
+                        
                         {% if not day_data.requests %}
-                            <div class="text-muted small mt-2" style="font-size: 0.7rem;">
-                                Click to schedule
+                            <div class="empty-slot">
+                                <i class="bi bi-plus-circle"></i> Click to schedule
                             </div>
                         {% endif %}
                     </div>
@@ -137,13 +183,26 @@ function scheduleMaintenance(date) {
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
-                <p><span class="badge bg-primary">Blue</span> = Preventive Maintenance Request</p>
-                <p><span class="badge bg-info">Highlighted</span> = Today's Date</p>
+                <div class="mb-3">
+                    <div class="calendar-request scheduled" style="display: inline-block; width: 150px;">
+                        Manually Scheduled
+                    </div>
+                    <p class="mt-2 mb-0"><small>Explicitly created preventive requests</small></p>
+                </div>
+                <div class="mb-3">
+                    <div class="calendar-request interval" style="display: inline-block; width: 150px;">
+                        Auto-Scheduled
+                    </div>
+                    <p class="mt-2 mb-0"><small>Based on equipment maintenance intervals</small></p>
+                </div>
             </div>
             <div class="col-md-6">
-                <p class="text-muted">
-                    <i class="bi bi-info-circle"></i> Click on a request to view details. 
-                    Hover over requests to see full information.
+                <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>Today's Date</strong> - Highlighted in yellow
+                </div>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-info-circle"></i> Click on scheduled maintenance to view/edit details. 
+                    Auto-scheduled items are calculated from equipment maintenance intervals.
                 </p>
             </div>
         </div>

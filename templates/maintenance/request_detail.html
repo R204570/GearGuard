@@ -197,63 +197,130 @@
                     </div>
                 </form>
 
+                <!-- Start Task Modal -->
+                <div class="modal fade" id="startTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-primary text-white border-0">
+                                <h5 class="modal-title"><i class="bi bi-play-circle"></i> Start Task</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body py-4">
+                                <p class="mb-3">Are you ready to start this maintenance task?</p>
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-clock"></i> The timer will begin now and track your work duration.
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="bi bi-x"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-primary" id="confirmStartBtn">
+                                    <i class="bi bi-play"></i> Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- End Task Modal -->
+                <div class="modal fade" id="endTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-success text-white border-0">
+                                <h5 class="modal-title"><i class="bi bi-stop-circle"></i> Complete Task</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body py-4">
+                                <p class="mb-3">Are you sure you want to mark this task as <strong>Repaired</strong>?</p>
+                                <div class="alert alert-success mb-0">
+                                    <i class="bi bi-check-circle"></i> Duration will be automatically calculated.
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="bi bi-x"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-success" id="confirmEndBtn">
+                                    <i class="bi bi-check"></i> Mark as Repaired
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const startBtn = document.getElementById('startTaskBtn');
                     const endBtn = document.getElementById('endTaskBtn');
+                    const startTaskModal = new bootstrap.Modal(document.getElementById('startTaskModal'));
+                    const endTaskModal = new bootstrap.Modal(document.getElementById('endTaskModal'));
+                    let currentRequestId = null;
                     
                     if (startBtn) {
                         startBtn.addEventListener('click', function() {
-                            const requestId = this.dataset.requestId;
-                            if (confirm('Start this task? The timer will begin now.')) {
-                                fetch(`/technician/requests/${requestId}/start-task/`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                                        'Content-Type': 'application/json'
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        location.reload();
-                                    } else {
-                                        alert('Error: ' + data.error);
-                                    }
-                                })
-                                .catch(error => {
-                                    alert('An error occurred. Please try again.');
-                                });
-                            }
+                            currentRequestId = this.dataset.requestId;
+                            startTaskModal.show();
                         });
                     }
                     
+                    document.getElementById('confirmStartBtn').addEventListener('click', function() {
+                        if (currentRequestId) {
+                            fetch(`/technician/requests/${currentRequestId}/start-task/`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                                    'Content-Type': 'application/json'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    location.reload();
+                                } else {
+                                    alert('Error: ' + data.error);
+                                }
+                            })
+                            .catch(error => {
+                                alert('An error occurred. Please try again.');
+                            });
+                        }
+                    });
+                    
                     if (endBtn) {
                         endBtn.addEventListener('click', function() {
-                            const requestId = this.dataset.requestId;
-                            if (confirm('End this task and mark as Repaired? Duration will be automatically calculated.')) {
-                                fetch(`/technician/requests/${requestId}/end-task/`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                                        'Content-Type': 'application/json'
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        alert('Task completed! Duration: ' + data.duration_hours + ' hours');
-                                        location.reload();
-                                    } else {
-                                        alert('Error: ' + data.error);
-                                    }
-                                })
-                                .catch(error => {
-                                    alert('An error occurred. Please try again.');
-                                });
-                            }
+                            currentRequestId = this.dataset.requestId;
+                            endTaskModal.show();
                         });
                     }
+                    
+                    document.getElementById('confirmEndBtn').addEventListener('click', function() {
+                        if (currentRequestId) {
+                            fetch(`/technician/requests/${currentRequestId}/end-task/`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                                    'Content-Type': 'application/json'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const successMsg = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-check-circle"></i> <strong>Task Completed!</strong> Duration: ${data.duration_hours} hours
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>`;
+                                    document.body.insertAdjacentHTML('afterbegin', successMsg);
+                                    setTimeout(() => location.reload(), 2000);
+                                } else {
+                                    alert('Error: ' + data.error);
+                                }
+                            })
+                            .catch(error => {
+                                alert('An error occurred. Please try again.');
+                            });
+                        }
+                    });
                 });
                 </script>
             </div>

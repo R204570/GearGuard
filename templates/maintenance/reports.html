@@ -267,18 +267,5 @@
     </div>
 </div>
 
-<div class="card mt-4">
-    <div class="card-body">
-        {% if user.profile.role == 'Admin' %}
-            <a href="{% url 'maintenance:admin_dashboard' %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
-            </a>
-        {% else %}
-            <a href="{% url 'maintenance:manager_dashboard' %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Manager Dashboard
-            </a>
-        {% endif %}
-    </div>
-</div>
 {% endblock %}
 

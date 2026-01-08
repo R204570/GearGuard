@@ -162,35 +162,68 @@
     </div>
 </div>
 
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title"><i class="bi bi-check-circle"></i> Approve Registration</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-3">Are you sure you want to approve the registration for <strong id="approveUsername"></strong>?</p>
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i> This user will be able to access the system after approval.
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="confirmApproveBtn">
+                    <i class="bi bi-check"></i> Approve
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const approveModal = new bootstrap.Modal(document.getElementById('approveModal'));
+    let approveId = null;
+    
     // Approve button handler
     document.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const id = this.dataset.id;
+            approveId = this.dataset.id;
             const username = this.dataset.username;
-            
-            if (confirm(`Are you sure you want to approve the registration for "${username}"?`)) {
-                fetch(`/admin/registrations/${id}/approve/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    alert('An error occurred. Please try again.');
-                });
-            }
+            document.getElementById('approveUsername').textContent = username;
+            approveModal.show();
         });
+    });
+    
+    // Confirm approve
+    document.getElementById('confirmApproveBtn').addEventListener('click', function() {
+        if (approveId) {
+            fetch(`/admin/registrations/${approveId}/approve/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('An error occurred. Please try again.');
+            });
+        }
     });
 
     // Reject button handler

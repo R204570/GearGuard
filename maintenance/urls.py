@@ -29,6 +29,7 @@ urlpatterns = [
     path('admin/equipment/', views.EquipmentManagementView.as_view(), name='admin_equipment'),
     path('admin/teams/', views.TeamManagementView.as_view(), name='admin_teams'),
     path('admin/teams/create/', views.TeamCreateView.as_view(), name='admin_team_create'),
+    path('admin/teams/<int:pk>/update/', views.TeamUpdateView.as_view(), name='admin_team_update'),
     path('admin/reports/', views.ReportsView.as_view(), name='admin_reports'),
     path('admin/manager-hours/', views.AdminManagerHoursView.as_view(), name='admin_manager_hours'),
     # Equipment CRUD URLs

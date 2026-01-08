@@ -415,7 +415,7 @@ class ManagerDashboardView(ManagerRequiredMixin, TemplateView):
         return context
 
 
-class MaintenanceRequestListView(ManagerRequiredMixin, ListView):
+class MaintenanceRequestListView(AdminOrManagerRequiredMixin, ListView):
     """List view for all maintenance requests with filtering."""
     model = MaintenanceRequest
     template_name = 'maintenance/request_list.html'
@@ -473,28 +473,30 @@ class MaintenanceRequestUpdateView(AdminOrManagerRequiredMixin, UpdateView):
     def form_valid(self, form):
         request_obj = form.instance
         
-        # Auto-set completed_date when marked as Repaired
-        if request_obj.stage == 'Repaired' and not request_obj.completed_date:
-            request_obj.completed_date = timezone.now().date()
-        
-        # Auto-set actual_start_time when moving to In Progress
-        if request_obj.stage == 'In Progress' and not request_obj.actual_start_time:
-            request_obj.actual_start_time = timezone.now()
-        
-        # Auto-set actual_end_time and calculate duration when marked as Repaired or Scrap
-        if request_obj.stage in ['Repaired', 'Scrap'] and not request_obj.actual_end_time:
-            request_obj.actual_end_time = timezone.now()
-            # Auto-calculate duration if start time exists
-            if request_obj.actual_start_time:
+        # Auto-set completed_date and calculate duration when marked as Repaired or Scrap
+        if request_obj.stage in ['Repaired', 'Scrap']:
+            if not request_obj.completed_date:
+                request_obj.completed_date = timezone.now().date()
+            
+            # Set actual_end_time if not already set
+            if not request_obj.actual_end_time:
+                request_obj.actual_end_time = timezone.now()
+            
+            # Auto-calculate duration if start time exists and duration not already calculated
+            if request_obj.actual_start_time and not request_obj.duration_hours:
                 time_diff = request_obj.actual_end_time - request_obj.actual_start_time
                 duration_hours = time_diff.total_seconds() / 3600  # Convert to hours
                 request_obj.duration_hours = round(duration_hours, 2)
+        
+        # Auto-set actual_start_time when moving to In Progress
+        elif request_obj.stage == 'In Progress' and not request_obj.actual_start_time:
+            request_obj.actual_start_time = timezone.now()
         
         messages.success(self.request, f'Maintenance request "{self.object.subject}" updated successfully.')
         return super().form_valid(form)
 
 
-class PreventiveMaintenanceCreateView(ManagerRequiredMixin, CreateView):
+class PreventiveMaintenanceCreateView(AdminOrManagerRequiredMixin, CreateView):
     """View to create preventive maintenance requests."""
     model = MaintenanceRequest
     form_class = PreventiveMaintenanceForm
@@ -508,7 +510,7 @@ class PreventiveMaintenanceCreateView(ManagerRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PreventiveMaintenanceCalendarView(ManagerRequiredMixin, TemplateView):
+class PreventiveMaintenanceCalendarView(AdminOrManagerRequiredMixin, TemplateView):
     """Calendar view for preventive maintenance requests."""
     template_name = 'maintenance/preventive_calendar.html'
 
@@ -524,6 +526,7 @@ class PreventiveMaintenanceCalendarView(ManagerRequiredMixin, TemplateView):
         _, last_day = monthrange(year, month)
         end_date = datetime(year, month, last_day).date()
         
+        # Get explicitly scheduled preventive requests
         preventive_requests = MaintenanceRequest.objects.filter(
             request_type='Preventive',
             scheduled_date__gte=start_date,
@@ -532,13 +535,64 @@ class PreventiveMaintenanceCalendarView(ManagerRequiredMixin, TemplateView):
             'equipment', 'maintenance_team', 'assigned_technician'
         ).order_by('scheduled_date')
         
-        # Organize requests by date
+        # Get equipment with maintenance intervals and calculate next maintenance dates
+        equipment_with_intervals = Equipment.objects.filter(
+            maintenance_interval_days__gt=0,
+            is_scrapped=False
+        ).select_related('maintenance_team', 'default_technician')
+        
+        # Create a dictionary to hold all maintenance items by date
         requests_by_date = {}
+        
+        # Add explicitly scheduled preventive requests
         for request in preventive_requests:
             date_key = request.scheduled_date.strftime('%Y-%m-%d')
             if date_key not in requests_by_date:
                 requests_by_date[date_key] = []
-            requests_by_date[date_key].append(request)
+            requests_by_date[date_key].append({
+                'type': 'scheduled',
+                'subject': request.subject,
+                'equipment_name': request.equipment.equipment_name,
+                'assigned_technician': request.assigned_technician,
+                'pk': request.pk,
+                'date': request.scheduled_date,
+            })
+        
+        # Add recurring maintenance dates from equipment intervals
+        for equipment in equipment_with_intervals:
+            # Get the starting point for calculating recurring dates
+            next_maintenance_date = equipment.get_next_maintenance_date()
+            
+            if next_maintenance_date and next_maintenance_date <= end_date:
+                # Generate all recurring maintenance dates within the month
+                current_date = next_maintenance_date
+                interval_days = equipment.maintenance_interval_days
+                
+                # Continue generating dates while within the month
+                while current_date <= end_date:
+                    # Check if there's already a completed or scheduled request for this date
+                    existing_request = MaintenanceRequest.objects.filter(
+                        equipment=equipment,
+                        request_type='Preventive',
+                        scheduled_date=current_date
+                    ).exclude(stage__in=['Scrap']).first()
+                    
+                    # Only add if no existing request on this date
+                    if not existing_request:
+                        date_key = current_date.strftime('%Y-%m-%d')
+                        if date_key not in requests_by_date:
+                            requests_by_date[date_key] = []
+                        requests_by_date[date_key].append({
+                            'type': 'interval',
+                            'subject': f'Preventive Maintenance - {equipment.equipment_name}',
+                            'equipment_name': equipment.equipment_name,
+                            'assigned_technician': equipment.default_technician,
+                            'pk': None,
+                            'date': current_date,
+                        })
+                    
+                    # Move to next occurrence
+                    current_date += timedelta(days=interval_days)
         
         # Build calendar grid
         first_day = datetime(year, month, 1)
@@ -624,8 +678,8 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         return context
 
 
-class EquipmentManagementView(AdminRequiredMixin, ListView):
-    """Admin view for equipment management."""
+class EquipmentManagementView(AdminOrManagerRequiredMixin, ListView):
+    """Equipment management view for admins and managers."""
     model = Equipment
     template_name = 'maintenance/admin_equipment.html'
     context_object_name = 'equipment_list'
@@ -662,8 +716,8 @@ class EquipmentManagementView(AdminRequiredMixin, ListView):
         return context
 
 
-class TeamManagementView(AdminRequiredMixin, ListView):
-    """Admin view for team management."""
+class TeamManagementView(AdminOrManagerRequiredMixin, ListView):
+    """Team management view for admins and managers."""
     model = MaintenanceTeam
     template_name = 'maintenance/admin_teams.html'
     context_object_name = 'teams'
@@ -692,7 +746,7 @@ class TeamManagementView(AdminRequiredMixin, ListView):
         return context
 
 
-class TeamCreateView(AdminRequiredMixin, CreateView):
+class TeamCreateView(AdminOrManagerRequiredMixin, CreateView):
     """Create new maintenance team."""
     model = MaintenanceTeam
     form_class = TeamForm
@@ -701,6 +755,18 @@ class TeamCreateView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         messages.success(self.request, f'Team "{form.instance.team_name}" created successfully.')
+        return super().form_valid(form)
+
+
+class TeamUpdateView(AdminOrManagerRequiredMixin, UpdateView):
+    """Update existing maintenance team."""
+    model = MaintenanceTeam
+    form_class = TeamForm
+    template_name = 'maintenance/team_form.html'
+    success_url = reverse_lazy('maintenance:admin_teams')
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Team "{form.instance.team_name}" updated successfully.')
         return super().form_valid(form)
 
 
@@ -746,7 +812,7 @@ class ReportsView(AdminRequiredMixin, TemplateView):
 
 
 # Equipment CRUD Views
-class EquipmentListView(AdminRequiredMixin, ListView):
+class EquipmentListView(AdminOrManagerRequiredMixin, ListView):
     """List view for all equipment with filtering."""
     model = Equipment
     template_name = 'maintenance/equipment_list.html'
@@ -807,7 +873,7 @@ class EquipmentListView(AdminRequiredMixin, ListView):
         return context
 
 
-class EquipmentCreateView(AdminRequiredMixin, CreateView):
+class EquipmentCreateView(AdminOrManagerRequiredMixin, CreateView):
     """Create new equipment."""
     model = Equipment
     form_class = EquipmentForm
@@ -819,7 +885,7 @@ class EquipmentCreateView(AdminRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class EquipmentUpdateView(AdminRequiredMixin, UpdateView):
+class EquipmentUpdateView(AdminOrManagerRequiredMixin, UpdateView):
     """Update existing equipment."""
     model = Equipment
     form_class = EquipmentForm
@@ -831,7 +897,7 @@ class EquipmentUpdateView(AdminRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class EquipmentDeleteView(AdminRequiredMixin, DeleteView):
+class EquipmentDeleteView(AdminOrManagerRequiredMixin, DeleteView):
     """Delete equipment."""
     model = Equipment
     template_name = 'maintenance/equipment_confirm_delete.html'
@@ -1091,9 +1157,19 @@ def update_request_stage(request, pk):
     # Auto-set timestamps based on stage
     if new_stage == 'In Progress' and not request_obj.actual_start_time:
         request_obj.actual_start_time = timezone.now()
-    elif new_stage in ['Repaired', 'Scrap'] and not request_obj.actual_end_time:
-        request_obj.actual_end_time = timezone.now()
-        if new_stage == 'Repaired' and not request_obj.completed_date:
+    elif new_stage in ['Repaired', 'Scrap']:
+        # When moving to Repaired or Scrap, set end time and calculate duration
+        if not request_obj.actual_end_time:
+            request_obj.actual_end_time = timezone.now()
+        
+        # Calculate duration if start time exists
+        if request_obj.actual_start_time and not request_obj.duration_hours:
+            time_diff = request_obj.actual_end_time - request_obj.actual_start_time
+            duration_hours = time_diff.total_seconds() / 3600  # Convert to hours
+            request_obj.duration_hours = round(duration_hours, 2)
+        
+        # Set completed_date for both Repaired and Scrap
+        if not request_obj.completed_date:
             request_obj.completed_date = timezone.now().date()
     
     request_obj.save()
@@ -1101,7 +1177,8 @@ def update_request_stage(request, pk):
     return JsonResponse({
         'success': True,
         'message': f'Request moved to {new_stage}',
-        'stage': new_stage
+        'stage': new_stage,
+        'duration_hours': float(request_obj.duration_hours) if request_obj.duration_hours else None
     })
 
 
