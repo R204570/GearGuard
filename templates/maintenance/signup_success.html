@@ -4,52 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Successful - GearGuard</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
-        .success-card {
-            max-width: 500px;
+
+        .login-container {
             width: 100%;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 520px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid #e1e8ed;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .login-header {
+            background: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.8rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-body {
+            padding: 2.5rem 2rem;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            border: none;
+            padding: 0.9rem 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(113,75,103,0.4);
+            transition: all 0.3s ease;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(113,75,103,0.5);
+            color: white;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card success-card">
-                    <div class="card-body p-5 text-center">
-                        <div class="mb-4">
-                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                        </div>
-                        <h2 class="mb-3">Registration Submitted!</h2>
-                        <p class="text-muted mb-4">
-                            Your registration request has been submitted successfully. 
-                            An administrator will review your request and you will be notified once approved.
-                        </p>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> 
-                            <strong>What's next?</strong><br>
-                            You will receive an email notification once your account is approved. 
-                            You can then log in with your credentials.
-                        </div>
-                        <a href="{% url 'maintenance:login' %}" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right"></i> Go to Login
-                        </a>
-                    </div>
-                </div>
+<div class="login-container">
+    <div class="login-card">
+
+        <div class="login-header">
+            <div class="logo">
+                <i class="bi bi-check-circle"></i>
             </div>
+            <h1>GearGuard</h1>
+            <p>Registration Successful</p>
         </div>
+
+        <div class="login-body">
+            <div class="success-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+
+            <h2 class="mb-3">Registration Submitted!</h2>
+
+            <p class="text-muted">
+                Your registration request has been submitted successfully.
+                An administrator will review your request and notify you once approved.
+            </p>
+
+            <div class="info-box">
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>What happens next?</strong><br>
+                You’ll receive an email once your account is approved.
+                After approval, you can log in using your credentials.
+            </div>
+
+            <a href="{% url 'maintenance:login' %}" class="btn btn-login mt-2">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Go to Login
+            </a>
+        </div>
+
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
