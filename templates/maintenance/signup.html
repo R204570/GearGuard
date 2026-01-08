@@ -4,149 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - GearGuard</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        .signup-card {
-            max-width: 500px;
+
+        .login-container {
             width: 100%;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 600px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid #e1e8ed;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .login-header {
+            background: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+            pointer-events: none;   /* 🔥 FIX */
+            z-index: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-body {
+            padding: 2.5rem 2rem;
+            position: relative;
+            z-index: 2;   /* 🔥 FIX */
+        }
+
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            color: #2c3e50;
+        }
+
+        .form-control,
+        select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            background: #f8f9fa;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus,
+        select:focus {
+            border-color: #714b67;
+            box-shadow: 0 0 0 3px rgba(113,75,103,0.1);
+            background: white;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #714b67 0%, #5a3d52 100%);
+            border: none;
+            padding: 0.9rem;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(113,75,103,0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(113,75,103,0.5);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .signup-link a {
+            color: #714b67;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card signup-card">
-                    <div class="card-body p-5">
-                        <div class="text-center mb-4">
-                            <h2><i class="bi bi-person-plus text-primary"></i> Sign Up</h2>
-                            <p class="text-muted">Create your GearGuard account</p>
-                        </div>
+<div class="login-container">
+    <div class="login-card">
 
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+        <div class="login-header">
+            <div class="logo">
+                <i class="bi bi-person-plus"></i>
+            </div>
+            <h1>GearGuard</h1>
+            <p>Create your account</p>
+        </div>
 
-                        <form method="post">
-                            {% csrf_token %}
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="{{ form.username.id_for_label }}" class="form-label">
-                                        Username <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.username }}
-                                    {% if form.username.errors %}
-                                        <div class="text-danger small">{{ form.username.errors }}</div>
-                                    {% endif %}
-                                </div>
+        <div class="login-body">
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="{{ form.email.id_for_label }}" class="form-label">
-                                        Email <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.email }}
-                                    {% if form.email.errors %}
-                                        <div class="text-danger small">{{ form.email.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
-                                    {{ form.first_name }}
-                                    {% if form.first_name.errors %}
-                                        <div class="text-danger small">{{ form.first_name.errors }}</div>
-                                    {% endif %}
-                                </div>
+            <form method="post">
+                {% csrf_token %}
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
-                                    {{ form.last_name }}
-                                    {% if form.last_name.errors %}
-                                        <div class="text-danger small">{{ form.last_name.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
+                        {{ form.username.errors }}
+                    </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="{{ form.password.id_for_label }}" class="form-label">
-                                        Password <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.password }}
-                                    {% if form.password.errors %}
-                                        <div class="text-danger small">{{ form.password.errors }}</div>
-                                    {% endif %}
-                                    {% if form.password.help_text %}
-                                        <small class="form-text text-muted">{{ form.password.help_text }}</small>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">
-                                        Confirm Password <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.password_confirm }}
-                                    {% if form.password_confirm.errors %}
-                                        <div class="text-danger small">{{ form.password_confirm.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="{{ form.requested_role.id_for_label }}" class="form-label">
-                                    Requested Role <span class="text-danger">*</span>
-                                </label>
-                                {{ form.requested_role }}
-                                {% if form.requested_role.errors %}
-                                    <div class="text-danger small">{{ form.requested_role.errors }}</div>
-                                {% endif %}
-                                {% if form.requested_role.help_text %}
-                                    <small class="form-text text-muted">{{ form.requested_role.help_text }}</small>
-                                {% endif %}
-                            </div>
-
-                            {% if form.non_field_errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.non_field_errors }}
-                                </div>
-                            {% endif %}
-
-                            <button type="submit" class="btn btn-primary w-100 mb-3">
-                                <i class="bi bi-person-plus"></i> Sign Up
-                            </button>
-                        </form>
-
-                        <div class="text-center">
-                            <small class="text-muted">
-                                Already have an account? 
-                                <a href="{% url 'maintenance:login' %}" class="text-decoration-none">Login here</a>
-                            </small>
-                        </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.email.label_tag }}
+                        {{ form.email }}
+                        {{ form.email.errors }}
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.first_name.label_tag }}
+                        {{ form.first_name }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        {{ form.last_name.label_tag }}
+                        {{ form.last_name }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.password.label_tag }}
+                        {{ form.password }}
+                        {{ form.password.errors }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        {{ form.password_confirm.label_tag }}
+                        {{ form.password_confirm }}
+                        {{ form.password_confirm.errors }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form.requested_role.label_tag }}
+                    {{ form.requested_role }}
+                    {{ form.requested_role.errors }}
+                </div>
+
+                <button type="submit" class="btn btn-login w-100 text-white">
+                    <i class="bi bi-person-plus me-2"></i> Sign Up
+                </button>
+            </form>
+
+            <div class="signup-link">
+                <small>
+                    Already have an account?
+                    <a href="{% url 'maintenance:login' %}">Login here</a>
+                </small>
             </div>
+
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
