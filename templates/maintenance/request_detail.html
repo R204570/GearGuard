@@ -223,6 +223,37 @@
                     </div>
                 </div>
 
+                <style>
+                    #startTaskModal, #endTaskModal {
+                        display: none !important;
+                    }
+                    
+                    #startTaskModal.show, #endTaskModal.show {
+                        display: block !important;
+                        animation: none !important;
+                    }
+                    
+                    .modal.show {
+                        pointer-events: auto !important;
+                    }
+                    
+                    .modal-backdrop {
+                        animation: none !important;
+                        opacity: 0.5 !important;
+                    }
+                    
+                    .modal-dialog {
+                        animation: none !important;
+                        margin-top: auto !important;
+                        margin-bottom: auto !important;
+                    }
+                    
+                    .modal-content {
+                        animation: none !important;
+                        transform: none !important;
+                    }
+                </style>
+
                 <!-- End Task Modal -->
                 <div class="modal fade" id="endTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -253,19 +284,45 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     const startBtn = document.getElementById('startTaskBtn');
                     const endBtn = document.getElementById('endTaskBtn');
-                    const startTaskModal = new bootstrap.Modal(document.getElementById('startTaskModal'));
-                    const endTaskModal = new bootstrap.Modal(document.getElementById('endTaskModal'));
+                    const startTaskModalEl = document.getElementById('startTaskModal');
+                    const endTaskModalEl = document.getElementById('endTaskModal');
+                    const startTaskModal = new bootstrap.Modal(startTaskModalEl, { backdrop: 'static', keyboard: false });
+                    const endTaskModal = new bootstrap.Modal(endTaskModalEl, { backdrop: 'static', keyboard: false });
                     let currentRequestId = null;
+                    let isProcessing = false;
+                    let modalShown = false;
+                    
+                    // Prevent modal from closing on accidental triggers
+                    startTaskModalEl.addEventListener('mousemove', function(e) {
+                        e.stopPropagation();
+                    });
+                    endTaskModalEl.addEventListener('mousemove', function(e) {
+                        e.stopPropagation();
+                    });
                     
                     if (startBtn) {
-                        startBtn.addEventListener('click', function() {
-                            currentRequestId = this.dataset.requestId;
-                            startTaskModal.show();
+                        startBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isProcessing && !modalShown) {
+                                modalShown = true;
+                                currentRequestId = this.dataset.requestId;
+                                startTaskModal.show();
+                            }
                         });
                     }
                     
+                    startTaskModalEl.addEventListener('hidden.bs.modal', function() {
+                        modalShown = false;
+                        isProcessing = false;
+                    });
+                    
                     document.getElementById('confirmStartBtn').addEventListener('click', function() {
-                        if (currentRequestId) {
+                        if (currentRequestId && !isProcessing) {
+                            isProcessing = true;
+                            this.disabled = true;
+                            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Starting...';
+                            
                             fetch(`/technician/requests/${currentRequestId}/start-task/`, {
                                 method: 'POST',
                                 headers: {
@@ -276,26 +333,47 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
+                                    startTaskModal.hide();
                                     location.reload();
                                 } else {
                                     alert('Error: ' + data.error);
+                                    isProcessing = false;
+                                    this.disabled = false;
+                                    this.innerHTML = '<i class="bi bi-play"></i> Start';
                                 }
                             })
                             .catch(error => {
                                 alert('An error occurred. Please try again.');
+                                isProcessing = false;
+                                this.disabled = false;
+                                this.innerHTML = '<i class="bi bi-play"></i> Start';
                             });
                         }
                     });
                     
                     if (endBtn) {
-                        endBtn.addEventListener('click', function() {
-                            currentRequestId = this.dataset.requestId;
-                            endTaskModal.show();
+                        endBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isProcessing && !modalShown) {
+                                modalShown = true;
+                                currentRequestId = this.dataset.requestId;
+                                endTaskModal.show();
+                            }
                         });
                     }
                     
+                    endTaskModalEl.addEventListener('hidden.bs.modal', function() {
+                        modalShown = false;
+                        isProcessing = false;
+                    });
+                    
                     document.getElementById('confirmEndBtn').addEventListener('click', function() {
-                        if (currentRequestId) {
+                        if (currentRequestId && !isProcessing) {
+                            isProcessing = true;
+                            this.disabled = true;
+                            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Completing...';
+                            
                             fetch(`/technician/requests/${currentRequestId}/end-task/`, {
                                 method: 'POST',
                                 headers: {
@@ -306,6 +384,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
+                                    endTaskModal.hide();
                                     const successMsg = `<div class="alert alert-success alert-dismissible fade show" role="alert">
                                         <i class="bi bi-check-circle"></i> <strong>Task Completed!</strong> Duration: ${data.duration_hours} hours
                                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -314,10 +393,16 @@
                                     setTimeout(() => location.reload(), 2000);
                                 } else {
                                     alert('Error: ' + data.error);
+                                    isProcessing = false;
+                                    this.disabled = false;
+                                    this.innerHTML = '<i class="bi bi-check"></i> Mark as Repaired';
                                 }
                             })
                             .catch(error => {
                                 alert('An error occurred. Please try again.');
+                                isProcessing = false;
+                                this.disabled = false;
+                                this.innerHTML = '<i class="bi bi-check"></i> Mark as Repaired';
                             });
                         }
                     });
