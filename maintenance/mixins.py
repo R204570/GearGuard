@@ -13,7 +13,7 @@ class ManagerRequiredMixin(LoginRequiredMixin):
         try:
             profile = request.user.profile
             if profile.role != 'Manager':
-                raise PermissionDenied("Only managers can access this page.")
+                raise PermissionDenied("Only managers or admin can access this page.")
         except AttributeError:
             raise PermissionDenied("User profile not found. Please contact administrator.")
         
